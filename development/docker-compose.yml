@@ -1,0 +1,61 @@
+
+
+version: "3.7"
+services:
+    db:
+        image: mysql:8.0.25
+        restart: always
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_USERNAME: fatma
+            MYSQL_PASSWORD: 2552005
+            # - '3306:3306'
+        expose:
+            - '3306'
+        volumes:
+            - db:/var/run/mysqld
+        logging:
+                driver: none
+        ports:
+            - "33061:3306"
+    redis:
+        image: redis
+    web:
+        build: ../
+        environment:
+            DB_USERNAME: fatma
+            DB_PASSWORD: 2552005
+            DB_NAME: webops_development
+            DB_PORT: 3306
+            DB_HOST: db
+            RAILS_ENV: development
+            RAILS_MAX_THREADS: 5
+            REDIS_HOST: redis
+            REDIS_PORT: 6379
+            BUNDLE_PATH: /bundle
+        volumes:
+            - ../:/rails-app
+            - bundle:/bundle
+        ports:
+            - "3000:3000"
+        depends_on:
+            - "db"
+            - "redis"
+    sidekiq:
+        build: ../
+        command: bundle exec sidekiq
+        volumes:
+            - ../:/rails-app
+        environment:
+            RAILS_ENV: development
+            REDIS_HOST: redis
+            REDIS_PORT: 6379
+        links:
+            - db
+            - redis
+            
+              
+volumes:
+    db:
+    bundle:
+    redis:
