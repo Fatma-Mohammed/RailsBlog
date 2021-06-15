@@ -20,8 +20,17 @@ class PostsController < ApplicationController
     # abort post_params.inspect
 
     @post = current_user.posts.new(post_params)
+    
 
     if @post.save
+      params[:tag_ids].each do |tag|
+        if tag = Tag.find(tag)
+        # abort tag.inspect
+        @post.tags << tag
+        else
+          render json: { message: 'Tag not found'}
+        end
+      end
       render json: @post, status: :created, location: @post
     else
       render json: @post.errors, status: :unprocessable_entity
@@ -50,7 +59,7 @@ class PostsController < ApplicationController
 
     # Only allow a trusted parameter "white list" through.
     def post_params
-      params.permit(:title, :body)
+      params.permit(:title, :body, tag_ids: [])
     end
 
 
