@@ -40,6 +40,18 @@ class PostsController < ApplicationController
   # PATCH/PUT /posts/1
   def update
     if @post.update(post_params)
+      if params.has_key?(:tag_ids)
+        post_tags = []
+        params[:tag_ids].each do |tag|
+          if tag = Tag.find(tag)
+          post_tags  << tag
+          # abort tag.inspect
+          @post.tags = post_tags
+          else
+            render json: { message: 'Tag not found'}
+          end
+        end
+      end
       render json: @post
     else
       render json: @post.errors, status: :unprocessable_entity
