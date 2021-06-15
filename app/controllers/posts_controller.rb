@@ -31,6 +31,8 @@ class PostsController < ApplicationController
           render json: { message: 'Tag not found'}
         end
       end
+      expiry_date = @post.created_at + 24.hours
+      HardWorker.perform_at(expiry_date,  @post.id)
       render json: @post, status: :created, location: @post
     else
       render json: @post.errors, status: :unprocessable_entity
